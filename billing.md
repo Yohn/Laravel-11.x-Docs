@@ -126,13 +126,14 @@ Lastly, to ensure Cashier properly handles all Stripe events, remember to [confi
 
 Before using Cashier, add the `Billable` trait to your billable model definition. Typically, this will be the `App\Models\User` model. This trait provides various methods to allow you to perform common billing tasks, such as creating subscriptions, applying coupons, and updating payment method information:
 
-    use Laravel\Cashier\Billable;
+```php
+use Laravel\Cashier\Billable;
 
-    class User extends Authenticatable
-    {
-        use Billable;
-    }
-
+class User extends Authenticatable
+{
+    use Billable;
+}
+```
 Cashier assumes your billable model will be the `App\Models\User` class that ships with Laravel. If you wish to change this you may specify a different model via the `useCustomerModel` method. This method should typically be called in the `boot` method of your `AppServiceProvider` class:
 
     use App\Models\Cashier\User;
