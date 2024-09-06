@@ -40,7 +40,7 @@ Providers define how users are retrieved from your persistent storage. Laravel s
 
 Your application's authentication configuration file is located at `config/auth.php`. This file contains several well-documented options for tweaking the behavior of Laravel's authentication services.
 
-> [!NOTE]  
+> [!NOTE]
 > Guards and providers should not be confused with "roles" and "permissions". To learn more about authorizing user actions via permissions, please refer to the [authorization](/docs/{{version}}/authorization) documentation.
 
 <a name="starter-kits"></a>
@@ -116,7 +116,7 @@ And, if you would like to get started quickly, we are pleased to recommend [Lara
 <a name="authentication-quickstart"></a>
 ## Authentication Quickstart
 
-> [!WARNING]  
+> [!WARNING]
 > This portion of the documentation discusses authenticating users via the [Laravel application starter kits](/docs/{{version}}/starter-kits), which includes UI scaffolding to help you get started quickly. If you would like to integrate with Laravel's authentication systems directly, check out the documentation on [manually authenticating users](#authenticating-users).
 
 <a name="install-a-starter-kit"></a>
@@ -133,6 +133,7 @@ Laravel Breeze is a minimal, simple implementation of all of Laravel's authentic
 
 After installing an authentication starter kit and allowing users to register and authenticate with your application, you will often need to interact with the currently authenticated user. While handling an incoming request, you may access the authenticated user via the `Auth` facade's `user` method:
 
+```php
     use Illuminate\Support\Facades\Auth;
 
     // Retrieve the currently authenticated user...
@@ -140,9 +141,10 @@ After installing an authentication starter kit and allowing users to register an
 
     // Retrieve the currently authenticated user's ID...
     $id = Auth::id();
-
+```
 Alternatively, once a user is authenticated, you may access the authenticated user via an `Illuminate\Http\Request` instance. Remember, type-hinted classes will automatically be injected into your controller methods. By type-hinting the `Illuminate\Http\Request` object, you may gain convenient access to the authenticated user from any controller method in your application via the request's `user` method:
 
+```php
     <?php
 
     namespace App\Http\Controllers;
@@ -164,19 +166,20 @@ Alternatively, once a user is authenticated, you may access the authenticated us
             return redirect('/flights');
         }
     }
-
+```
 <a name="determining-if-the-current-user-is-authenticated"></a>
 #### Determining if the Current User is Authenticated
 
 To determine if the user making the incoming HTTP request is authenticated, you may use the `check` method on the `Auth` facade. This method will return `true` if the user is authenticated:
 
+```php
     use Illuminate\Support\Facades\Auth;
 
     if (Auth::check()) {
         // The user is logged in...
     }
-
-> [!NOTE]  
+```
+> [!NOTE]
 > Even though it is possible to determine if a user is authenticated using the `check` method, you will typically use a middleware to verify that the user is authenticated before allowing the user access to certain routes / controllers. To learn more about this, check out the documentation on [protecting routes](/docs/{{version}}/authentication#protecting-routes).
 
 <a name="protecting-routes"></a>
@@ -184,15 +187,17 @@ To determine if the user making the incoming HTTP request is authenticated, you 
 
 [Route middleware](/docs/{{version}}/middleware) can be used to only allow authenticated users to access a given route. Laravel ships with an `auth` middleware, which is a [middleware alias](/docs/{{version}}/middleware#middleware-aliases) for the `Illuminate\Auth\Middleware\Authenticate` class. Since this middleware is already aliased internally by Laravel, all you need to do is attach the middleware to a route definition:
 
+```php
     Route::get('/flights', function () {
         // Only authenticated users may access this route...
     })->middleware('auth');
-
+```
 <a name="redirecting-unauthenticated-users"></a>
 #### Redirecting Unauthenticated Users
 
 When the `auth` middleware detects an unauthenticated user, it will redirect the user to the `login` [named route](/docs/{{version}}/routing#named-routes). You may modify this behavior using the method `redirectGuestsTo` of your application's `bootstrap/app.php` file:
 
+```php
     use Illuminate\Http\Request;
 
     ->withMiddleware(function (Middleware $middleware) {
@@ -201,22 +206,23 @@ When the `auth` middleware detects an unauthenticated user, it will redirect the
         // Using a closure...
         $middleware->redirectGuestsTo(fn (Request $request) => route('login'));
     })
-
+```
 <a name="specifying-a-guard"></a>
 #### Specifying a Guard
 
 When attaching the `auth` middleware to a route, you may also specify which "guard" should be used to authenticate the user. The guard specified should correspond to one of the keys in the `guards` array of your `auth.php` configuration file:
 
+```php
     Route::get('/flights', function () {
         // Only authenticated users may access this route...
     })->middleware('auth:admin');
-
+```
 <a name="login-throttling"></a>
 ### Login Throttling
 
 If you are using the Laravel Breeze or Laravel Jetstream [starter kits](/docs/{{version}}/starter-kits), rate limiting will automatically be applied to login attempts. By default, the user will not be able to login for one minute if they fail to provide the correct credentials after several attempts. The throttling is unique to the user's username / email address and their IP address.
 
-> [!NOTE]  
+> [!NOTE]
 > If you would like to rate limit other routes in your application, check out the [rate limiting documentation](/docs/{{version}}/routing#rate-limiting).
 
 <a name="authenticating-users"></a>
@@ -226,6 +232,7 @@ You are not required to use the authentication scaffolding included with Laravel
 
 We will access Laravel's authentication services via the `Auth` [facade](/docs/{{version}}/facades), so we'll need to make sure to import the `Auth` facade at the top of the class. Next, let's check out the `attempt` method. The `attempt` method is normally used to handle authentication attempts from your application's "login" form. If authentication is successful, you should regenerate the user's [session](/docs/{{version}}/session) to prevent [session fixation](https://en.wikipedia.org/wiki/Session_fixation):
 
+```php
     <?php
 
     namespace App\Http\Controllers;
@@ -257,7 +264,7 @@ We will access Laravel's authentication services via the `Auth` [facade](/docs/{
             ])->onlyInput('email');
         }
     }
-
+```
 The `attempt` method accepts an array of key / value pairs as its first argument. The values in the array will be used to find the user in your database table. So, in the example above, the user will be retrieved by the value of the `email` column. If the user is found, the hashed password stored in the database will be compared with the `password` value passed to the method via the array. You should not hash the incoming request's `password` value, since the framework will automatically hash the value before comparing it to the hashed password in the database. An authenticated session will be started for the user if the two hashed passwords match.
 
 Remember, Laravel's authentication services will retrieve users from your database based on your authentication guard's "provider" configuration. In the default `config/auth.php` configuration file, the Eloquent user provider is specified and it is instructed to use the `App\Models\User` model when retrieving users. You may change these values within your configuration file based on the needs of your application.
@@ -271,12 +278,14 @@ The `intended` method provided by Laravel's redirector will redirect the user to
 
 If you wish, you may also add extra query conditions to the authentication query in addition to the user's email and password. To accomplish this, we may simply add the query conditions to the array passed to the `attempt` method. For example, we may verify that the user is marked as "active":
 
+```php
     if (Auth::attempt(['email' => $email, 'password' => $password, 'active' => 1])) {
         // Authentication was successful...
     }
-
+```
 For complex query conditions, you may provide a closure in your array of credentials. This closure will be invoked with the query instance, allowing you to customize the query based on your application's needs:
 
+```php
     use Illuminate\Database\Eloquent\Builder;
 
     if (Auth::attempt([
@@ -286,12 +295,13 @@ For complex query conditions, you may provide a closure in your array of credent
     ])) {
         // Authentication was successful...
     }
-
-> [!WARNING]  
+```
+> [!WARNING]
 > In these examples, `email` is not a required option, it is merely used as an example. You should use whatever column name corresponds to a "username" in your database table.
 
 The `attemptWhen` method, which receives a closure as its second argument, may be used to perform more extensive inspection of the potential user before actually authenticating the user. The closure receives the potential user and should return `true` or `false` to indicate if the user may be authenticated:
 
+```php
     if (Auth::attemptWhen([
         'email' => $email,
         'password' => $password,
@@ -300,7 +310,7 @@ The `attemptWhen` method, which receives a closure as its second argument, may b
     })) {
         // Authentication was successful...
     }
-
+```
 <a name="accessing-specific-guard-instances"></a>
 #### Accessing Specific Guard Instances
 
@@ -308,10 +318,11 @@ Via the `Auth` facade's `guard` method, you may specify which guard instance you
 
 The guard name passed to the `guard` method should correspond to one of the guards configured in your `auth.php` configuration file:
 
+```php
     if (Auth::guard('admin')->attempt($credentials)) {
         // ...
     }
-
+```
 <a name="remembering-users"></a>
 ### Remembering Users
 
@@ -319,20 +330,22 @@ Many web applications provide a "remember me" checkbox on their login form. If y
 
 When this value is `true`, Laravel will keep the user authenticated indefinitely or until they manually logout. Your `users` table must include the string `remember_token` column, which will be used to store the "remember me" token. The `users` table migration included with new Laravel applications already includes this column:
 
+```php
     use Illuminate\Support\Facades\Auth;
 
     if (Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
         // The user is being remembered...
     }
-
+```
 If your application offers "remember me" functionality, you may use the `viaRemember`  method to determine if the currently authenticated user was authenticated using the "remember me" cookie:
 
+```php
     use Illuminate\Support\Facades\Auth;
 
     if (Auth::viaRemember()) {
         // ...
     }
-
+```
 <a name="other-authentication-methods"></a>
 ### Other Authentication Methods
 
@@ -341,29 +354,34 @@ If your application offers "remember me" functionality, you may use the `viaReme
 
 If you need to set an existing user instance as the currently authenticated user, you may pass the user instance to the `Auth` facade's `login` method. The given user instance must be an implementation of the `Illuminate\Contracts\Auth\Authenticatable` [contract](/docs/{{version}}/contracts). The `App\Models\User` model included with Laravel already implements this interface. This method of authentication is useful when you already have a valid user instance, such as directly after a user registers with your application:
 
+```php
     use Illuminate\Support\Facades\Auth;
 
     Auth::login($user);
-
+```
 You may pass a boolean value as the second argument to the `login` method. This value indicates if "remember me" functionality is desired for the authenticated session. Remember, this means that the session will be authenticated indefinitely or until the user manually logs out of the application:
 
+```php
     Auth::login($user, $remember = true);
-
+```
 If needed, you may specify an authentication guard before calling the `login` method:
 
+```php
     Auth::guard('admin')->login($user);
-
+```
 <a name="authenticate-a-user-by-id"></a>
 #### Authenticate a User by ID
 
 To authenticate a user using their database record's primary key, you may use the `loginUsingId` method. This method accepts the primary key of the user you wish to authenticate:
 
+```php
     Auth::loginUsingId(1);
-
+```
 You may pass a boolean value to the `remember` argument of the `loginUsingId` method. This value indicates if "remember me" functionality is desired for the authenticated session. Remember, this means that the session will be authenticated indefinitely or until the user manually logs out of the application:
 
+```php
     Auth::loginUsingId(1, remember: true);
-
+```
 <a name="authenticate-a-user-once"></a>
 #### Authenticate a User Once
 
@@ -479,7 +497,7 @@ When the `logoutOtherDevices` method is invoked, the user's other sessions will 
 
 While building your application, you may occasionally have actions that should require the user to confirm their password before the action is performed or before the user is redirected to a sensitive area of the application. Laravel includes built-in middleware to make this process a breeze. Implementing this feature will require you to define two routes: one route to display a view asking the user to confirm their password and another route to confirm that the password is valid and redirect the user to their intended destination.
 
-> [!NOTE]  
+> [!NOTE]
 > The following documentation discusses how to integrate with Laravel's password confirmation features directly; however, if you would like to get started more quickly, the [Laravel application starter kits](/docs/{{version}}/starter-kits) include support for this feature!
 
 <a name="password-confirmation-configuration"></a>
